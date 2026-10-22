@@ -68,9 +68,35 @@ member's directory, then bumps that member's `pyproject.toml` too. The root
 file the `--pyproject-toml` option names decides which lock is used, and only
 that one project tree is touched.
 
-## The verbose table
+## Progress output
 
-`-v` prints, per processed file, one row per moved package:
+Every run starts with a status line on stderr:
+
+```
+$ uu
+Checking updates...
+  python-dateutil 1.9 → 3.0.0
+  six 1.16.0 → 1.17.0
+```
+
+While `uv sync` works, the three dots grow into a dot animation when stderr
+is a real terminal (`Checking updates......`); piped output — CI logs, `tee`
+— sees the plain line without dots. On completion the line is terminated and
+either one line appears per updated package, `  name old → new`, or, when
+neither the lock nor any manifest moved, the summary:
+
+```
+$ uu
+Checking updates...
+Everything up to date.
+```
+
+A package counts as updated when a feasible minimum bound moved in any
+`pyproject.toml` member, or when the lock holds a different version than it
+did before the sync; each package is reported once, with the manifest's old
+bound as the "old" value when the manifest moved. Update lines go to stderr
+along with the checking line, so stdout carries only the `-v` tables and can
+be piped without decoration. `-v`'s table keeps the file-level detail:
 
 ```
 	Package		Lock file		pyproject.toml

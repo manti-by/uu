@@ -39,7 +39,8 @@ dependencies = [
 ]";
 
 /// A temp directory holding the project: `pyproject.toml`, and a `uv.lock`
-/// that the fake resolver rewrites.
+/// that the fake resolver rewrites. Both sinks capture output: `out` is what
+/// the binary sends to stdout, `progress` is what it sends to stderr.
 struct Project {
     root: PathBuf,
 }
@@ -92,6 +93,7 @@ fn capture(out: Vec<u8>) -> String {
 fn bumps_pyproject_to_lock_versions() {
     let project = Project::new();
     let mut out: Vec<u8> = Vec::new();
+    let mut progress: Vec<u8> = Vec::new();
 
     let sync = project.sync();
     bump(
@@ -100,6 +102,7 @@ fn bumps_pyproject_to_lock_versions() {
         true,
         sync,
         &mut out,
+        &mut progress,
     )
     .unwrap();
 
@@ -122,6 +125,7 @@ fn verbose_reports_both_snapshots() {
     let project = Project::new();
     project.write("uv.lock", LOCK_AFTER);
     let mut out: Vec<u8> = Vec::new();
+    let mut progress: Vec<u8> = Vec::new();
 
     let sync = project.sync();
     bump(
@@ -130,6 +134,7 @@ fn verbose_reports_both_snapshots() {
         true,
         sync,
         &mut out,
+        &mut progress,
     )
     .unwrap();
 
@@ -148,6 +153,7 @@ fn verbose_reports_both_snapshots() {
 fn verbose_reports_a_genuinely_updated_lock() {
     let project = Project::new();
     let mut out: Vec<u8> = Vec::new();
+    let mut progress: Vec<u8> = Vec::new();
 
     let sync = project.sync();
     bump(
@@ -156,6 +162,7 @@ fn verbose_reports_a_genuinely_updated_lock() {
         true,
         sync,
         &mut out,
+        &mut progress,
     )
     .unwrap();
 
@@ -164,6 +171,65 @@ fn verbose_reports_a_genuinely_updated_lock() {
         text.contains("\tpolars\t\t1.20.0 → 1.21.0"),
         "expected the lock movement in:\n{text}"
     );
+}
+
+#[test]
+fn status_lines_report_what_moved() {
+    let project = Project::new();
+    let mut out: Vec<u8> = Vec::new();
+    let mut progress: Vec<u8> = Vec::new();
+
+    let sync = project.sync();
+    bump(
+        Some(project.root.join("pyproject.toml")),
+        false,
+        true,
+        sync,
+        &mut out,
+        &mut progress,
+    )
+    .unwrap();
+
+    let text = capture(progress);
+    assert!(text.starts_with("Checking updates..."), "\n{text}");
+    assert!(text.contains("  polars 1.20.0 → 1.21.0"), "\n{text}");
+    assert!(!text.contains("Everything up to date"), "\n{text}");
+}
+
+#[test]
+fn nothing_moving_says_up_to_date() {
+    // Both snapshots agree and the manifest already holds the lock versions:
+    // no line with an arrow may appear, only the summary.
+    let project = Project::new();
+    project.write("uv.lock", LOCK_AFTER);
+    project.write(
+        "pyproject.toml",
+        "[project]\n\
+         name = \"uv-bump\"\n\
+         version = \"0.1.2\"\n\
+         description = \"Bump pyproject.toml dependency minimum versions.\"\n\
+         readme = \"README.md\"\n\
+         requires-python = \">=3.12\"\n\
+         dependencies = [\n    \"polars>=1.21.0\",\n]",
+    );
+    let mut out: Vec<u8> = Vec::new();
+    let mut progress: Vec<u8> = Vec::new();
+
+    let sync = project.sync();
+    bump(
+        Some(project.root.join("pyproject.toml")),
+        false,
+        true,
+        sync,
+        &mut out,
+        &mut progress,
+    )
+    .unwrap();
+
+    let text = capture(progress);
+    assert!(text.starts_with("Checking updates..."), "\n{text}");
+    assert!(text.contains("Everything up to date."), "\n{text}");
+    assert!(!text.contains(" → "), "\n{text}");
 }
 
 #[test]
@@ -189,18 +255,25 @@ fn workspaces_bump_every_member() {
     .unwrap();
 
     let mut out: Vec<u8> = Vec::new();
+    let mut progress: Vec<u8> = Vec::new();
     bump(
         Some(root.join("pyproject.toml")),
         true,
         false,
         |_upgrade| Ok(()),
         &mut out,
+        &mut progress,
     )
     .unwrap();
 
     // Every workspace member the lock names was visited.
     let text = capture(out);
     assert!(text.contains("packages/my_lib/pyproject.toml"), "\n{text}");
+
+    // The status lines aggregate updates across every member file.
+    let status = capture(progress);
+    assert!(status.contains("  pytest 8.0 → 8.3.4"), "\n{status}");
+    assert!(status.contains("  pluggy 1.0 → 1.5.0"), "\n{status}");
     assert!(
         fs::read_to_string(root.join("packages/my_lib/pyproject.toml"))
             .unwrap()

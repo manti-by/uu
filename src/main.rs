@@ -81,9 +81,20 @@ fn run(args: Vec<String>) -> Result<()> {
         index += 1;
     }
 
-    let stdout = std::io::stdout();
-    let mut out = stdout.lock();
-    bump::bump(pyproject_toml, verbose, upgrade, uv::sync, &mut out)
+    // Stdout and Stderr lock per write call, so they must be passed as the
+    // streams themselves and not as a held lock: the spinner thread locks
+    // stderr while the main thread writes through it, and a lock held for the
+    // whole run would deadlock the animation.
+    let mut out = std::io::stdout();
+    let mut progress = std::io::stderr();
+    bump::bump(
+        pyproject_toml,
+        verbose,
+        upgrade,
+        uv::sync,
+        &mut out,
+        &mut progress,
+    )
 }
 
 /// Reads the value of the `--pyproject-toml` option at `index`, requiring the

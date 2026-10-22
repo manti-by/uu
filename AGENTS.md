@@ -32,6 +32,7 @@ alone, the exact wording of the verbose table, and the fact that `pyproject.toml
 | `src/pyproject.rs` | The regex rewrite of a `pyproject.toml` text — every semantic rule about which specifiers move lives here. |
 | `src/lock.rs` | `uv.lock` parsing: package versions in lock order, and where every workspace member's `pyproject.toml` sits. |
 | `src/uv.rs` | The `uv sync --all-extras [--upgrade]` invocation. The only place that knows how uv is called. |
+| `src/progress.rs` | The `Checking updates...` indicator with its dot animation, plus the decision of when dots may animate. |
 | `src/error.rs` | The `Error` type, `Result`, and the `bail!`/`ensure!` macros. |
 | `src/lib.rs` | Module tree; the testable surface the integration tests import. |
 | `tests/e2e.rs` | End-to-end tests mirroring the upstream `uv-bump` test suite, with a fake resolver writing the lock. |
@@ -49,6 +50,13 @@ alone, the exact wording of the verbose table, and the fact that `pyproject.toml
   underlying I/O or process failure, so the printed chain reads `could not read pyproject.toml: No such file…`. `main` prints the whole chain.
 - Every module that can be tested in isolation carries a `#[cfg(test)] mod tests` block. The full-pipeline tests live in `tests/e2e.rs` and inject a fake
   resolver closure, so they never call the real `uv`.
+- Progress and status go to stderr, tables and other user-offered detail to
+  stdout, so piped stdout stays free of decoration. The dot animation only
+  runs when stderr is a real terminal (`std::io::IsTerminal`); piped output
+  sees plain lines. Stdout and stderr must be passed to `bump` as the streams
+  themselves, never as a held `lock()` — the spinner thread locks stderr
+  while the main thread writes through it, and a lock held across the run is
+  a deadlock.
 - The verbose table is part of the output contract. The literal tab counts and the `→` separator match upstream; do not restyle it without checking the
   upstream output string.
 - Anything the user sees is documented in exactly one place. `README.md` is the short front door and links out; `wiki/docs/MORE.md` owns the command list

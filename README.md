@@ -7,10 +7,30 @@
 `uv sync --upgrade` updates `uv.lock`, but never touches `pyproject.toml` — so over time a manifest that says `"six>=1.16.0"` starts depending on features of 1.17.0. `uu` runs `uv sync` for you and then bumps every feasible minimum bound in the manifest to the version the lock resolved:
 
 ```
+$ uu
+Checking updates...
+  python-dateutil 1.9 → 3.0.0
+  six 1.16.0 → 1.17.0
+```
+
+Run it again once nothing is stale and it says so:
+
+```
+$ uu
+Checking updates...
+Everything up to date.
+```
+
+`-v` adds the per-file detail table after the status:
+
+```
 $ uu -v
+Checking updates...
+  python-dateutil 1.9 → 3.0.0
+  six 1.16.0 → 1.17.0
 Processed pyproject.toml
 	Package		Lock file		pyproject.toml
-	python-dateutil		-		2.0 → 3.0.0
+	python-dateutil		-		1.9 → 3.0.0
 	six		-		1.16.0 → 1.17.0
 ```
 

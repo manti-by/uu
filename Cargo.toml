@@ -1,9 +1,9 @@
 [package]
 name = "uu"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
-description = "Bump pyproject.toml dependency minimum versions to the versions chosen by uv.lock"
-license = "MIT"
+description = "Bump pyproject.toml dependency minimum versions to the latest versions"
+license = "BSD-3-Clause"
 
 [dependencies]
 regex = "1.12.2"

@@ -6,5 +6,6 @@
 pub mod bump;
 pub mod error;
 pub mod lock;
+pub mod progress;
 pub mod pyproject;
 pub mod uv;
