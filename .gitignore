@@ -1,0 +1,11 @@
+.agents/
+.claude/
+.opencode/
+
+.env
+.DS_Store
+
+target/
+
+# Lock file the wiki plugin takes while it rewrites INDEX.md.
+wiki/INDEX.md.lock
