@@ -28,11 +28,19 @@ upstream tool, and structure the repository after `manti-by/sk`:
 
 ## Consequences
 
-- Feature parity is the test suite. `tests/e2e.rs` mirrors the upstream
-  pytest suite case by case: upper bounds kept, extras preserved, `==` pins
-  untouched, comments kept, and both verbose columns.
+- Feature parity is the test suite. The per-specifier cases — upper bounds
+  kept, extras preserved, `==` pins untouched, comments kept — are unit tests
+  in `src/pyproject.rs`; `tests/e2e.rs` mirrors the upstream suite's pipeline
+  cases, both verbose columns included.
 - First version is `0.1.0`, released by pushing the version bump to `master`.
 - Any behaviour difference that a port intentionally makes (for example a
   clearer error message naming the missing file) is fine as long as the data
   written and the exit semantics stay the same; differences must be checked
   in, not accidental.
+
+Amended 2026-10-28: the parity bullet above credited `tests/e2e.rs` with the
+per-specifier cases. They actually live in `src/pyproject.rs`'s unit tests
+(`updates_upper_bound_kept_intact`, `updates_extras`,
+`leaves_exact_pins_alone`, `keeps_inline_comment`, …); the end-to-end suite
+covers the pipeline and both verbose columns. Wording corrected during a wiki
+consistency pass, decision unchanged.

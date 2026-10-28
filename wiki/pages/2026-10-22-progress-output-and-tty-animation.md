@@ -37,3 +37,8 @@ keeping clean for scripts.
   would most naturally come from a dedicated progress crate, at the cost of
   dropping the std-only dependency rule; the current shape was kept std-only
   in the spirit of `sk`'s `parallel.rs`.
+
+The animation's shape was revised on 2026-10-28: the appended dot trail became
+a fixed-width 1 → 3 dot cycle on the same line, as recorded in
+[[2026-10-28-in-place-three-dot-animation]]. Everything above — stderr,
+tty-only animation, finishing before the error — still holds.

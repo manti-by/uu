@@ -24,3 +24,15 @@ superseding an older one writes a new page.
 - Console transcripts in documentation are copied from a real run of the
   binary, never typed from memory. If a transcript has to be regenerated, run
   the command again.
+
+## Questions and index
+
+`QUESTIONS.md` holds open questions newest-first under `## Open`, numbered
+`Q-NNN`. A human fills in `**Answer:**`; the answer is then applied to the
+pages named in `**Pages:**`, and the entry moves to `## Resolved` with a note
+of what changed. The entry shape lives in the file's comment block.
+
+`INDEX.md` catalogs the wiki: `## Pages` lists every page once, newest first,
+as `- [title](pages/file.md) — summary (date)`, and `## By topic` clusters the
+same pages by subject. Both sections are rebuilt whenever a page is added,
+retitled or corrected, so the index never drifts from `pages/`.

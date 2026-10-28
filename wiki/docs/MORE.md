@@ -79,11 +79,13 @@ Checking updates...
   six 1.16.0 → 1.17.0
 ```
 
-While `uv sync` works, the three dots grow into a dot animation when stderr
-is a real terminal (`Checking updates......`); piped output — CI logs, `tee`
-— sees the plain line without dots. On completion the line is terminated and
-either one line appears per updated package, `  name old → new`, or, when
-neither the lock nor any manifest moved, the summary:
+While `uv sync` works, the three dots cycle in place when stderr is a real
+terminal — `Checking updates.`, `..`, `...`, then back to one dot, rewriting
+the same line. Piped output — CI logs, `tee` — sees the plain line once, with
+no carriage returns. On completion the animation is cleared, the line resolves
+to `Checking updates...`, and then either one line appears per updated package,
+`  name old → new`, or, when neither the lock nor any manifest moved, the
+summary:
 
 ```
 $ uu
@@ -100,7 +102,7 @@ be piped without decoration. `-v`'s table keeps the file-level detail:
 
 ```
 	Package		Lock file		pyproject.toml
-	python-dateutil		-		2.0 → 3.0.0
+	python-dateutil		-		1.9 → 3.0.0
 ```
 
 The *Lock file* column compares the before/after snapshots of the lock; a `-`

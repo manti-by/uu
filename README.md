@@ -38,7 +38,7 @@ Use `--no-upgrade`/`-n` to skip re-resolving the lock and only rewrite the manif
 
 ## Installation
 
-The quickest way, on macOS and Ubuntu, is the install script. It downloads the newest release for your machine, verifies its SHA-256 and drops the binary into `~/.local/bin`:
+The quickest way, on macOS and Linux, is the install script. It downloads the newest release for your machine, verifies its SHA-256 and drops the binary into `~/.local/bin`:
 
 ```
 $ curl -LsSf https://raw.githubusercontent.com/manti-by/uu/master/install.sh | sh

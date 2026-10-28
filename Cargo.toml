@@ -1,6 +1,6 @@
 [package]
 name = "uu"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2024"
 description = "Bump pyproject.toml dependency minimum versions to the latest versions"
 license = "BSD-3-Clause"
